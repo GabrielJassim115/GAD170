@@ -1,0 +1,170 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Assignment : MonoBehaviour
+{
+    public int attackDamage = 10; // Player Damage
+    public int lvl = 1; // Player Level at game start
+    public int xp = 0; // Player current XP
+    public int maxLvl = 5; // Max lvl
+    private int zombieHp; // Zombie hp
+    private int zombieLvl; // Zombie lvl
+    private bool gameStarted = false;
+    private bool isBossBattle = false; // super cool awesome boss battle?
+    private bool waitingForLevelUp = false; // wait for lvl up
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        // Welcome MEssage
+        Debug.Log("Adventurer! You must help, our humble town of Clumsyton has been overridden by Zombies and for some reason we have literally no idea what to do and are standing around aimlessly being eaten! Please brave adventurer you must save us!");
+        Debug.Log("Press SPACE to start accept the quest and begin your adventure.");
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        // Check if the player started the game
+        if (Input.GetKeyDown(KeyCode.Space) && !gameStarted)
+        {
+            gameStarted = true;
+            StartGame();
+        }
+
+        // Player attacks when left mouse button is clicked
+        if (Input.GetMouseButtonDown(0) && gameStarted)
+        {
+            AttackZombie();
+        }
+
+        // Check if player presses "R" to restart after game over
+        if (Input.GetKeyDown(KeyCode.R) && !gameStarted)
+        {
+            RestartGame();
+        }
+
+        // Check if the player presses "L" to level up when XP is 100
+        if (Input.GetKeyDown(KeyCode.L) && waitingForLevelUp)
+        {
+            LevelUp();
+        }
+    }
+
+    // Start the game
+    void StartGame()
+    {
+        Debug.Log("The game has begun!");
+        SpawnZombie(); // Spawn the first zombie
+    }
+
+    // Spawn a zombie with random level and hp
+    void SpawnZombie()
+    {
+        if (lvl < maxLvl)
+        {
+            zombieLvl = Random.Range(1, 4); // Zombie level between 1 and 3
+            if (zombieLvl == 1)
+                zombieHp = 30;
+            else if (zombieLvl == 2)
+                zombieHp = 40;
+            else
+                zombieHp = 50;
+
+            Debug.Log($"A level {zombieLvl} zombie appears with {zombieHp} HP!");
+            Debug.Log("Click to attack the zombie.");
+        }
+        else if (lvl == maxLvl)
+        {
+            isBossBattle = true;
+            zombieHp = 300; //boss hp
+            Debug.Log("You reached MAX LEVEL!!! Oh No! It's the SUPER MEGA ZOMBIE BOSS, only you have the power to defeat him!");
+            Debug.Log("Click to attack the boss.");
+        }
+    }
+
+    // Attacking
+    void AttackZombie()
+    {
+        if (isBossBattle)
+        {
+            zombieHp -= attackDamage;
+            Debug.Log($"You deal {attackDamage} damage to the SUPER MEGA ZOMBIE BOSS!");
+            Debug.Log($"Boss health: {zombieHp}");
+
+            // Check if the boss is dead
+            if (zombieHp <= 0)
+            {
+                Debug.Log("Congrats you did it hero! You saved Clumsyton! Here is your reward!");
+                Debug.Log("+5 Rusty Silver Coins, + Half a loaf of stale bread and + Cup of Warm Mead added to your inventory!");
+                Debug.Log("You think to yourself that maybe you shouldn't have done adventuring for a living, it doesn't pay too good... You give up and go home for the day...");
+                Debug.Log("Game Over.");
+                gameStarted = false;
+                Debug.Log("Press R to Start Over!");
+            }
+        }
+        else
+        {
+            zombieHp -= attackDamage;
+            Debug.Log($"You deal {attackDamage} damage to the zombie!");
+            Debug.Log($"Zombie health: {zombieHp}");
+
+            // Check if the zombie is dead
+            if (zombieHp <= 0)
+            {
+                Debug.Log("Zombie Defeated! Oh, No! Another appears!");
+                xp += 50;
+                Debug.Log($"You gained 50 XP! Current XP: {xp}");
+
+                if (xp >= 100)
+                {
+                    waitingForLevelUp = true; // Set the flag to allow level-up
+                    Debug.Log("You have enough XP to level up! Press 'L' to level up.");
+                }
+                else
+                {
+                    SpawnZombie();
+                }
+            }
+        }
+    }
+
+    // Level up!
+    void LevelUp()
+    {
+        xp = 0;
+        lvl++;
+        attackDamage = Mathf.RoundToInt(attackDamage * 1.25f); // Increase attack damage by 25%
+
+        Debug.Log("Level Up!");
+        Debug.Log($"You are now level {lvl}!");
+        Debug.Log($"Your attack damage is now {attackDamage}!");
+
+        // Once leveled up, stop waiting for input
+        waitingForLevelUp = false;
+
+        // Spawn the next zombie after leveling up
+        if (lvl == maxLvl)
+        {
+            SpawnZombie();
+        }
+        else
+        {
+            SpawnZombie();
+        }
+    }
+
+    // Restarting The Game
+    void RestartGame()
+    {
+        lvl = 1;
+        xp = 0;
+        isBossBattle = false;
+        waitingForLevelUp = false;
+        gameStarted = false;
+
+        // Display restart message
+        Debug.Log("Game restarted!");
+        Debug.Log("Press SPACE to start your adventure.");
+    }
+}
